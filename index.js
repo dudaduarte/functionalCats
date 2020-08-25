@@ -12,11 +12,21 @@ requirejs(['jquery', 'ramda'], ($, { path, pipe, curry, map, prop }) => {
 
   const createImg = src => $('<img />', { src })
 
-  const handleResponse = pipe(
+  const getImgUrls = map(path(['media', 'm']))
+
+  const createImgTags = map(createImg)
+
+  const extractUrls = pipe(
     prop('items'),
-    map(path(['media', 'm'])),
-    map(createImg),
-    Impure.setHtml('#js-main')
+    getImgUrls
+  )
+
+  const render = Impure.setHtml('#js-main')
+
+  const handleResponse = pipe(
+    extractUrls,
+    createImgTags,
+    render
   )
 
   const host = 'api.flickr.com'
@@ -26,11 +36,8 @@ requirejs(['jquery', 'ramda'], ($, { path, pipe, curry, map, prop }) => {
 
   const app = pipe(
     url,
-    Impure.getJSON(
-      pipe(
-        handleResponse,
-        Impure.trace('response')
-      ))
+    Impure.getJSON(handleResponse)
   )
+
   app('cats')
 })
